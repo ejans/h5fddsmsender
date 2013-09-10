@@ -7,6 +7,24 @@ to get libraries usable inside a block
 then:
 ./configure
 
+Or:
+
+we need to compile everything with -fPIC as flags:
+For mpich2-1:
+
+export CPPFLAGS=-fPIC
+export CXXFLAGS=-fPIC
+export CFLAGS=-fPIC
+
+then configurate:
+./configure --prefix=/home/(User)/local --enable-shared --enable-sharedlibs=gcc --disable-f77 --disable-fc
+
+
+When compiling hdf5-vfd:
+
+	BUILD_SHARED_LIBS 	ON
+we set the CMAKE_CXX_FLAGS	-fPIC
+and        CMAKE_C_FLAGS	-fPIC
 
 
 If we want to use the block (H5f...)
