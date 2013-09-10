@@ -1,0 +1,18 @@
+
+when compiling hdf5 you should set:
+
+export CPPFLAGS=-fPIC
+export CFLAGS=-fPIC
+to get libraries usable inside a block
+then:
+./configure
+
+
+
+If we want to use the block (H5f...)
+
+look at it:
+ldd H5FDdsmSender.so
+
+we need to set the LDD_LIBRARY path:
+export LD_LIBRARY_PATH=/home/evert/Documents/KULeuven/NEW_2013_07_15/h5fddsm/h5fddsm-0.9.9/build/bin/:/usr/local/lib/
