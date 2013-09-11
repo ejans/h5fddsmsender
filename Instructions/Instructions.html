@@ -1,50 +1,101 @@
-<!DOCTYPE html> 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr"> 
-<body> 
-<h1>Using H5FDdsmSender</h1> 
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+<body>
+<h1>Using H5FDdsmSender</h1>
 <hr>
-<p>when compiling the different source files to use H5FDdsm the following environment variables should be set:
+<p>First we need git and clang:
 </p>
-<pre>
-export CPPFLAGS=-fPIC
-export CFLAGS=-fPIC
-export CXXFLAGS=-fPIC
-</pre>
-<!-- to get libraries usable inside a block -->
-<p>Then follow the instructions <a href="https://bitbucket.org/ejans/h5fddsm_instructions">here</a>.
-
-<p>When compiling hdf5-vfd check the following:</p>
-<pre>
-BUILD_SHARED_LIBS 	ON
-CMAKE_CXX_FLAGS         -fPIC
-CMAKE_C_FLAGS           -fPIC
-</pre>
-<p>Copy the lua script from the BUP folder to the microblx environment:</p>
-<pre>
-cp BUP/hdf5Send.lua ../../
-</pre>
-<p>Make the microblx: </p>
-<pre>
-cd ~/microblx
-make -j4
-</pre>
-<p>Now check the variables in the makefile and make H5FDdsmSender:</p>
-<pre>
-cd ~/std_blocks/H5FDdsmSender
+<pre><code>
+sudo apt-get install git clang cproto liblua5.1-md5-* libluajit-5.1-dev lua5.1
+</code></pre>
+<p>We also need luajit
+</p>
+<pre><code>
+cd ~/
+git clone http://luajit.org/git/luajit-2.0.git
+cd luajit-2.0/
+</code></pre>
+<p>Edit the prefix path in the Makefile:
+</p>
+<pre><code>
 <var>Your_Favorite_Editor</var> Makefile
-.
-.
+export PREFIX= /usr/local -> export PREFIX= /home/<var>User</var>/local
+</code></pre>
+<p>And make/install:
+</p>
+<pre><code>
 make -j4
-</pre>
-<p>If we want to use the block we need to set another environment variable.</p>
-<p>Look at the needed libraries:</p>
-<pre>
-ldd H5FDdsmSender.so
-</pre>
-<p>We need to set the LD_LIBRARY path:</p>
-<pre>
-export LD_LIBRARY_PATH=/home/<var>User</var>/h5fddsm/h5fddsm-0.9.9/build/bin/:/usr/local/lib/
-<pre>
+make install
+</code></pre>
+<p>Now we get the microblx source:
+</p>
+<pre><code>
+cd ~/
+git clone https://<var>Username</var>@bitbucket.org/kmarkus/microblx.git
+</code></pre>
+<p>Now we get the H5FDdsmSender source:
+</p>
+<pre><code>
+cd microblx/std_blocks
+git clone https://<var>Username</var>@bitbucket.org/ejans/h5fddsmsender.git H5FDdsmSender
+</code></pre>
+<p>Copy the luascript to the microblx environment:
+</p>
+<pre><code>
+cd H5FDdsmSender/BUP
+cp hdf5Send.lua ../../../
+</code></pre>
+<p>Source the environment
+</p>
+<pre><code>
+cd ~/microblx
+. env.sh
+</code></pre>
+<p>Make all microblx:
+</p>
+<pre><code>
+make -j4
+</code></pre>
+<p>And make the stdtypes:
+</p>
+<pre><code>
+cd std_types/stdtypes
+make
+cd ../kdl
+make
+</code></pre>
+<p>Now we make the H5FDdsmSender:
+</p>
+<pre><code>
+cd std_blocks/H5FDdsmSender
+make
+</code></pre>
+<p>Back to microblx environment:
+</p>
+<pre><code>
+cd ../..
+</code></pre>
+<p>View the dependencies of H5FDdsmSender.so:
+</p>
+<pre><code>
+ldd std_blocks/H5FDdsmSender/H5FDdsmSender.so
+</code></pre>
+<p>It lists the following as not found:
+</p>
+<pre><code>
+libH5FDdsm.so.0.9.9 => not found
+libhdf5.so.7.3.0 => not found
+</code></pre>
+<p>So we export the paths of these libraries:
+</p>
+<pre><code>
+export LD_LIBRARY_PATH=/home/<var>User</var>/h5fddsm/h5fddsm-0.9.9/build/bin/:/home/<var>User</var>/local/lib
+</code></pre>
+<p>And run:
+</p>
+<pre><code>
+../local/bin/luajit hdf5Send.lua
+</code></pre>
 <p>Or for the youbot we need to create links for some libraries because luajit is runnig as root:</p>
 <pre>
 cd /usr/local/lib
