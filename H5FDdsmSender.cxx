@@ -5,12 +5,15 @@
 #include <stdio.h>
 #include <time.h>
 #include <hdf5.h>
+//#include "/home/evert/local/include/hdf5.h"
 #include <cstdlib>
 
 #include "ubx.h"
 
-#include "h5fddsm-0.9.9/Testing/H5FDdsmTest.h"
-#include "h5fddsm-0.9.9/src/H5FDdsm.h"
+//#include "/home/evert/h5fddsm/h5fddsm-0.9.9/Testing/H5FDdsmTest.h"
+#include <H5FDdsmTest.h>
+//#include "/home/evert/h5fddsm/h5fddsm-0.9.9/src/H5FDdsm.h"
+#include <H5FDdsm.h>
 
 #include "vector.h"
 #include "rotation.h"
