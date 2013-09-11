@@ -11,7 +11,7 @@ export CFLAGS=-fPIC
 export CXXFLAGS=-fPIC
 </pre>
 <!-- to get libraries usable inside a block -->
-<p>Then follow the instructins <a href="https://bitbucket.org/ejans/h5fddsm_instructions">here</a>.
+<p>Then follow the instructions <a href="https://bitbucket.org/ejans/h5fddsm_instructions">here</a>.
 
 <p>When compiling hdf5-vfd check the following:</p>
 <pre>
@@ -45,5 +45,13 @@ ldd H5FDdsmSender.so
 <pre>
 export LD_LIBRARY_PATH=/home/<var>User</var>/h5fddsm/h5fddsm-0.9.9/build/bin/:/usr/local/lib/
 <pre>
+<p>Or for the youbot we need to create links for some libraries because luajit is runnig as root:</p>
+<pre>
+cd /usr/local/lib
+sudo ln -s /home/<var>User</var>/h5fddsm/h5fddsm-0.9.9/build/bin/libH5FDdsm.so.0.9.9
+sudo ln -s /home/<var>User</var>/local/lib/libhdf5.so.7.3.0
+sudo ln -s /home/<var>User</var>/local/lib/libmpl.so.1
+sudo ldconfig
+</pre>
 </body>
 </html>
