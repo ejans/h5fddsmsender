@@ -1,36 +1,49 @@
-
-when compiling hdf5 you should set:
-
+<!DOCTYPE html> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr"> 
+<body> 
+<h1>Using H5FDdsmSender</h1> 
+<hr>
+<p>when compiling the different source files to use H5FDdsm the following environment variables should be set:
+</p>
+<pre>
 export CPPFLAGS=-fPIC
 export CFLAGS=-fPIC
-to get libraries usable inside a block
-then:
-./configure
-
-Or:
-
-we need to compile everything with -fPIC as flags:
-For mpich2-1:
-
-export CPPFLAGS=-fPIC
 export CXXFLAGS=-fPIC
-export CFLAGS=-fPIC
+</pre>
+<!-- to get libraries usable inside a block -->
+<p>Then follow the instructins <a href="https://bitbucket.org/ejans/h5fddsm_instructions">here</a>.
 
-then configurate:
-./configure --prefix=/home/(User)/local --enable-shared --enable-sharedlibs=gcc --disable-f77 --disable-fc
-
-
-When compiling hdf5-vfd:
-
-	BUILD_SHARED_LIBS 	ON
-we set the CMAKE_CXX_FLAGS	-fPIC
-and        CMAKE_C_FLAGS	-fPIC
-
-
-If we want to use the block (H5f...)
-
-look at it:
+<p>When compiling hdf5-vfd check the following:</p>
+<pre>
+BUILD_SHARED_LIBS 	ON
+CMAKE_CXX_FLAGS         -fPIC
+CMAKE_C_FLAGS           -fPIC
+</pre>
+<p>Copy the lua script from the BUP folder to the microblx environment:</p>
+<pre>
+cp BUP/hdf5Send.lua ../../
+</pre>
+<p>Make the microblx: </p>
+<pre>
+cd ~/microblx
+make -j4
+</pre>
+<p>Now check the variables in the makefile and make H5FDdsmSender:</p>
+<pre>
+cd ~/std_blocks/H5FDdsmSender
+<var>Your_Favorite_Editor</var> Makefile
+.
+.
+make -j4
+</pre>
+<p>If we want to use the block we need to set another environment variable.</p>
+<p>Look at the needed libraries:</p>
+<pre>
 ldd H5FDdsmSender.so
-
-we need to set the LDD_LIBRARY path:
-export LD_LIBRARY_PATH=/home/evert/Documents/KULeuven/NEW_2013_07_15/h5fddsm/h5fddsm-0.9.9/build/bin/:/usr/local/lib/
+</pre>
+<p>We need to set the LD_LIBRARY path:</p>
+<pre>
+export LD_LIBRARY_PATH=/home/<var>User</var>/h5fddsm/h5fddsm-0.9.9/build/bin/:/usr/local/lib/
+<pre>
+</body>
+</html>
