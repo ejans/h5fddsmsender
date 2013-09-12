@@ -51,9 +51,19 @@ cp hdf5Send.lua ../../../
 cd ~/microblx
 . env.sh
 </code></pre>
+<p>Get soem to compile youbot_driver:
+</p>
+<pre><code>
+cd std_blocks/youbot_driver
+git clone https://github.com/kmarkus/soem1.2.5 soem
+cd soem
+cd src
+make
+</code></pre>
 <p>Make all microblx:
 </p>
 <pre><code>
+cd ~/microblx
 make -j4
 </code></pre>
 <p>And make the stdtypes:

@@ -137,10 +137,11 @@ void init(struct H5FDdsmSender_info* sinfo) {
         sinfo->comm = MPI_COMM_WORLD;
         sinfo->dsmManager = new H5FDdsmManager();
         //TODO Set the ip and port from config
-        //TODO Do this in start of step to be able to use multiple times
 	//senderInit(NULL, 0, sinfo->dsmManager, &sinfo->comm);
 	//char ip[] = "10.33.173.147";
-	//senderInitIp(NULL, 0, 22000, ip, sinfo->dsmManager, &sinfo->comm);
+        char ip[] = "10.33.174.62";
+        /* We made a new function which has IP and port as argument */
+	senderInitIp(NULL, 0, 22000, ip, sinfo->dsmManager, &sinfo->comm);
         //TODO We breakup this function to be able to change the hostname 
         //and port and to be able to resend after first send, see H5FDdsmTest.cxx
 	/*
@@ -183,15 +184,6 @@ void createGroups(struct H5FDdsmSender_info* sinfo) {
 	createGroup(sinfo, "/State/BaseCartesianPosition/Rotation");
 }
 
-/*
-void createGroup(hid_t handle, char* name) {
-	
-	group_id = H5Gcreate2(handle, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-	H5Gclose(group_id);
-}
-
-*/
-
 void createGroup(struct H5FDdsmSender_info* sinfo, const char* name) {
         
 	sinfo->group_id = H5Gcreate2(sinfo->hdf5Handle, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -201,7 +193,6 @@ void createGroup(struct H5FDdsmSender_info* sinfo, const char* name) {
 void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* current_dims, hsize_t* max_dims) {
 	
 	sinfo->dataspace_id = H5Screate_simple(rank, current_dims, max_dims);
-	//sinfo->dataspace_id = H5Screate_simple(rank, current_dims);
 }
 
 hid_t createDatasetChar(hid_t handle, const char* name, hid_t dataspace_id, char* data) {
@@ -253,6 +244,7 @@ static void h5fsnd_cleanup(ubx_block_t *c) {
 	struct H5FDdsmSender_info* inf;
         inf=(struct H5FDdsmSender_info*) c->private_data;
         DBG(" ");
+	senderFinalize(inf->dsmManager, &inf->comm);
 	delete inf->dsmManager;
 	free(c->private_data);
 }
@@ -272,10 +264,6 @@ static void h5fsnd_step(ubx_block_t *c) {
 
         inf=(struct H5FDdsmSender_info*) c->private_data;
 
-        //TODO From init
-	char ip[] = "10.33.173.147";
-	//senderInit(NULL, 0, inf->dsmManager, &inf->comm);
-	senderInitIp(NULL, 0, 22000, ip, inf->dsmManager, &inf->comm);
 	// Set file access property list for DSM
 	inf->fapl = H5Pcreate(H5P_FILE_ACCESS);
 	// Use DSM driver
@@ -314,9 +302,10 @@ static void h5fsnd_step(ubx_block_t *c) {
 	// get time
 	//TODO Threadsafe?
 	inf->now = time(NULL);
+        // put time in string
 	inf->time_string = ctime(&inf->now);
         // View time
-        //DBG("time: " + inf->time_string);
+        //DBG("time: %s\n", inf->time_string);
         printf("time: %s\n", inf->time_string);
 
 	// Create hdf5 file and send it out!
@@ -385,14 +374,13 @@ static void h5fsnd_step(ubx_block_t *c) {
 
 	H5Fclose(inf->hdf5Handle);
 	
-        //TODO Don't finalize here ?
-	senderFinalize(inf->dsmManager, &inf->comm);
+        // Don't finalize here!!
+	//senderFinalize(inf->dsmManager, &inf->comm);
 
 }
 
 ubx_block_t h5fsnd_comp = {
         
-	//.name = "H5FDdsmSender/H5FDdseSender",
 	.name = "std_blocks/h5fddsmsender",
 	.type = BLOCK_TYPE_COMPUTATION,
 	.meta_data = h5fsnd_meta,
@@ -415,7 +403,6 @@ static int h5fsnd_mod_init(ubx_node_info_t* ni)
 static void h5fsnd_mod_cleanup(ubx_node_info_t *ni)
 {
         DBG(" ");
-        //ubx_block_unregister(ni, "H5FDdseSender/H5FDdseSender");
         ubx_block_unregister(ni, "std_blocks/h5fddsmsender");
 }
 
