@@ -3,16 +3,15 @@
  */
 
 #include <stdio.h>
+//TODO Test:
+#include <string.h>
 #include <time.h>
 #include <hdf5.h>
-//#include "/home/evert/local/include/hdf5.h"
 #include <cstdlib>
 
 #include "ubx.h"
 
-//#include "/home/evert/h5fddsm/h5fddsm-0.9.9/Testing/H5FDdsmTest.h"
 #include <H5FDdsmTest.h>
-//#include "/home/evert/h5fddsm/h5fddsm-0.9.9/src/H5FDdsm.h"
 #include <H5FDdsm.h>
 
 #include "vector.h"
@@ -41,6 +40,7 @@ char h5fsnd_meta[] =
  */
 ubx_config_t h5fsnd_config[] = {
         
+        //TODO Load configuration
 	{ .name="port_config", .type_name = "unsigned int" },
 	{ .name="ip", .type_name="char" },
 
@@ -48,7 +48,7 @@ ubx_config_t h5fsnd_config[] = {
 };
 
 
-/* we need a trigger and data from the robot */
+/* we need twist and frame data from the robot */
 ubx_port_t h5fsnd_ports[] = {
 
 	{ .name="base_msr_twist", .attrs=PORT_DIR_IN, .in_type_name="struct kdl_twist" },
@@ -62,9 +62,6 @@ struct H5FDdsmSender_info {
 
 	MPI_Comm comm;
 	H5FDdsmManager* dsmManager;
-	//TODO These arguments? hardcode?
-	//senderInit(argc, argv, dsmManager, &comm);
-	//senderInit("", 0, dsmManager, &comm);
 	
 	hid_t       file_id, group_id, dataset_id, dataspace_id, hdf5Handle, fapl;  /* identifiers */
 	hsize_t     dims[2];
@@ -139,13 +136,27 @@ void init(struct H5FDdsmSender_info* sinfo) {
 		
         sinfo->comm = MPI_COMM_WORLD;
         sinfo->dsmManager = new H5FDdsmManager();
-	//senderInit("", 0, sinfo->dsmManager, &sinfo->comm);
-	senderInit(NULL, 0, sinfo->dsmManager, &sinfo->comm);
-	// Create Array
-	//int array[3] = { 1, 2, 3 };
-	//int read_array[3];
-	//Unused
-	//hsize_t arraySize = 3;
+        //TODO Set the ip and port from config
+        //TODO Do this in start of step to be able to use multiple times
+	//senderInit(NULL, 0, sinfo->dsmManager, &sinfo->comm);
+	//char ip[] = "10.33.173.147";
+	//senderInitIp(NULL, 0, 22000, ip, sinfo->dsmManager, &sinfo->comm);
+        //TODO We breakup this function to be able to change the hostname 
+        //and port and to be able to resend after first send, see H5FDdsmTest.cxx
+	/*
+	H5FDdsmInt32   nlocalprocs, rank;
+        MPI_Init(NULL, 0);
+        MPI_Comm_rank(&sinfo->comm, &rank);
+	MPI_Comm_size(&sinfo->comm, &nlocalprocs);
+	sinfo->dsmManager->SetServerHostName("192.168.10.171"); 
+	sinfo->dsmManager->SetServerPort(22000); 
+	sinfo->dsmManager->SetMpiComm(&sinfo->comm);
+	sinfo->dsmManager->SetIsServer(H5FD_DSM_FALSE);
+	sinfo->dsmManager->Create();
+	H5FD_dsm_set_manager(sinfo->dsmManager);
+	*/
+
+/*
 	// Set file access property list for DSM
 	sinfo->fapl = H5Pcreate(H5P_FILE_ACCESS);
 	// Use DSM driver
@@ -154,8 +165,9 @@ void init(struct H5FDdsmSender_info* sinfo) {
 	sinfo->hdf5Handle = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, sinfo->fapl);
 	// Close file access property list
 	H5Pclose(sinfo->fapl);
-
+        // Create all groups
 	createGroups(sinfo);
+*/
 }
 
 void createGroups(struct H5FDdsmSender_info* sinfo) {
@@ -260,6 +272,21 @@ static void h5fsnd_step(ubx_block_t *c) {
 
         inf=(struct H5FDdsmSender_info*) c->private_data;
 
+        //TODO From init
+	char ip[] = "10.33.173.147";
+	//senderInit(NULL, 0, inf->dsmManager, &inf->comm);
+	senderInitIp(NULL, 0, 22000, ip, inf->dsmManager, &inf->comm);
+	// Set file access property list for DSM
+	inf->fapl = H5Pcreate(H5P_FILE_ACCESS);
+	// Use DSM driver
+	H5Pset_fapl_dsm(inf->fapl, inf->comm, NULL, 0);
+	// Create DSM
+	inf->hdf5Handle = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, inf->fapl);
+	// Close file access property list
+	H5Pclose(inf->fapl);
+        // Create all groups
+	createGroups(inf);
+
 	//TODO goto off for testing
 
 	
@@ -288,13 +315,16 @@ static void h5fsnd_step(ubx_block_t *c) {
 	//TODO Threadsafe?
 	inf->now = time(NULL);
 	inf->time_string = ctime(&inf->now);
+        // View time
+        //DBG("time: " + inf->time_string);
+        printf("time: %s\n", inf->time_string);
 
 	// Create hdf5 file and send it out!
 	// Timestamp
-	inf->dims[0] = 1;
-	inf->dims[1] =1;
+	inf->dims[0] = 24;
+	inf->dims[1] = 1;
 	setDataspaceId(inf, 1, inf->dims, NULL);
-	inf->dataset_id = createDatasetChar(inf->hdf5Handle, "/State/Timestamp/timestamp", inf->dataspace_id,
+	inf->dataset_id = createDatasetChar(inf->hdf5Handle, "/State/TimeStamp/timestamp", inf->dataspace_id,
 	        inf->time_string);
 	
 	// Arm joint position
@@ -305,6 +335,8 @@ static void h5fsnd_step(ubx_block_t *c) {
 	//inf.dataset_id = createDatasetDouble(inf.hdf5Handle, "/State/Timestamp/arm_jnt_pos", inf.dataspace_id, arm_jnt_pos);
 
 	// twist lin
+	inf->dims[0] = 1;
+	inf->dims[1] = 1;
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/Twist/LinearVelocity/x", inf->dataspace_id,
 	        &twist.vel.x);
@@ -353,7 +385,9 @@ static void h5fsnd_step(ubx_block_t *c) {
 
 	H5Fclose(inf->hdf5Handle);
 	
+        //TODO Don't finalize here ?
 	senderFinalize(inf->dsmManager, &inf->comm);
+
 }
 
 ubx_block_t h5fsnd_comp = {
@@ -382,50 +416,9 @@ static void h5fsnd_mod_cleanup(ubx_node_info_t *ni)
 {
         DBG(" ");
         //ubx_block_unregister(ni, "H5FDdseSender/H5FDdseSender");
-        ubx_block_unregister(ni, "std_blocks/h5fddsesender");
+        ubx_block_unregister(ni, "std_blocks/h5fddsmsender");
 }
 
 
 module_init(h5fsnd_mod_init)
 module_cleanup(h5fsnd_mod_cleanup)
-
-/*
-int main(int argc, char * argv[]) {
-
-	init();
-	createGroups();
-
-	// Timestamp
-	dataspace_id = setDataspaceId(1, 1, NULL);
-	dataset_id = createDatasetChar(hdf5Handle, "/State/Timestamp/timestamp", dataspace_id, time_string);
-	
-	// Arm joint position
-	dims[0] = 5;
-	dims[1] =1;
-	
-	dataspace_id = setDataspaceId(2, dims, NULL);
-	dataset_id = createDatasetDouble(hdf5Handle, "/State/Timestamp/arm_jnt_pos", dataspace_id, arm_jnt_pos);
-
-	// Vector
-	dataspace_id = setDataspaceId(1, 1, NULL);
-	dataset_id = createDatasetDouble(hdf5Handle, "/State/BaceCartesianPosition/Vector/x", dataspace_id, kdl_vector_x);
-
-	dataspace_id = setDataspaceId(1, 1, NULL);
-	dataset_id = createDatasetDouble(hdf5Handle, "/State/BaceCartesianPosition/Vector/y", dataspace_id, kdl_vector_y);
-	
-	dataspace_id = setDataspaceId(1, 1, NULL);
-	dataset_id = createDatasetDouble(hdf5Handle, "/State/BaceCartesianPosition/Vector/z", dataspace_id, kdl_vector_z);
-	
-	// Rotation
-	dims[0] = 9;
-	dims[1] =1;
-	dataspace_id = setDataspaceId(2, dims, NULL);
-	dataset_id = createDatasetDouble(hdf5Handle, "/State/BaseCartesianPosition/Rotation/rotation", dataspace_id, kdl_rotation_data);
-
-	H5Fclose(hdf5Handle);
-	
-	senderFinalize(dsmManager, &comm);
-	delete dsmManager;
-	return(EXIT_SUCCESS);
-}
-*/

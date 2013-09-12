@@ -37,12 +37,12 @@ git clone https://<var>Username</var>@bitbucket.org/kmarkus/microblx.git
 </p>
 <pre><code>
 cd microblx/std_blocks
-git clone https://<var>Username</var>@bitbucket.org/ejans/h5fddsmsender.git H5FDdsmSender
+git clone https://<var>Username</var>@bitbucket.org/ejans/h5fddsmsender.git
 </code></pre>
 <p>Copy the luascript to the microblx environment:
 </p>
 <pre><code>
-cd H5FDdsmSender/BUP
+cd h5fddsmsender/BUP
 cp hdf5Send.lua ../../../
 </code></pre>
 <p>Source the environment
@@ -67,7 +67,7 @@ make
 <p>Now we make the H5FDdsmSender:
 </p>
 <pre><code>
-cd std_blocks/H5FDdsmSender
+cd std_blocks/h5fddsmsender
 make
 </code></pre>
 <p>Back to microblx environment:
@@ -78,7 +78,7 @@ cd ../..
 <p>View the dependencies of H5FDdsmSender.so:
 </p>
 <pre><code>
-ldd std_blocks/H5FDdsmSender/H5FDdsmSender.so
+ldd std_blocks/h5fddsmsender/H5FDdsmSender.so
 </code></pre>
 <p>It lists the following as not found:
 </p>
