@@ -358,7 +358,8 @@ static void h5fsnd_step(ubx_block_t *c) {
 
 ubx_block_t h5fsnd_comp = {
         
-	.name = "H5FDdsmSender/H5FDdseSender",
+	//.name = "H5FDdsmSender/H5FDdseSender",
+	.name = "std_blocks/h5fddsmsender",
 	.type = BLOCK_TYPE_COMPUTATION,
 	.meta_data = h5fsnd_meta,
 	.configs = h5fsnd_config,
@@ -380,7 +381,8 @@ static int h5fsnd_mod_init(ubx_node_info_t* ni)
 static void h5fsnd_mod_cleanup(ubx_node_info_t *ni)
 {
         DBG(" ");
-        ubx_block_unregister(ni, "H5FDdseSender/H5FDdseSender");
+        //ubx_block_unregister(ni, "H5FDdseSender/H5FDdseSender");
+        ubx_block_unregister(ni, "std_blocks/h5fddsesender");
 }
 
 
