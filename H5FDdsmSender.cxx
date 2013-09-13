@@ -3,8 +3,6 @@
  */
 
 #include <stdio.h>
-//TODO Test:
-#include <string.h>
 #include <time.h>
 #include <hdf5.h>
 #include <cstdlib>
@@ -28,7 +26,7 @@
 char h5fsnd_meta[] =
         "{ doc='A hdf5-data sender function block',"
         "  license='LGPL',"
-	"  real-time=true,"
+	"  real-time=true?,"
 	"}";
 
 /* configuration
@@ -41,10 +39,11 @@ char h5fsnd_meta[] =
 ubx_config_t h5fsnd_config[] = {
         
         //TODO Load configuration
-	{ .name="port_config", .type_name = "unsigned int" },
-	{ .name="ip", .type_name="char" },
+	//{.name="port", .type_name="int"}, 
+	{.name="port", .type_name="char", .value={.len=10}}, 
+	{.name="ip", .type_name="char", .value={.len=11}}, /* car[11] */
 
-        { NULL },
+        {NULL},
 };
 
 
@@ -60,6 +59,7 @@ ubx_port_t h5fsnd_ports[] = {
 
 struct H5FDdsmSender_info {
 
+        //TODO Add kdl structs to this to get the right data inside h5 file
 	MPI_Comm comm;
 	H5FDdsmManager* dsmManager;
 	
@@ -68,6 +68,11 @@ struct H5FDdsmSender_info {
 	herr_t      status;
 	time_t      now;
 	char*       time_string;
+        char*       ip;
+        int         port;
+        kdl_twist   twist;
+        kdl_frame   frame;
+
 };
 
 /* convenience functions to read/write from the ports */
@@ -93,6 +98,7 @@ struct H5FDdsmSender_info* randomize(struct H5FDdsmSender_info* info) {
         return info;
 }
 
+/*
 struct kdl_twist randomTwist() {
         
 	struct kdl_twist ret;
@@ -105,7 +111,20 @@ struct kdl_twist randomTwist() {
 
 	return ret;
 }
+*/
 
+void randomTwist(struct H5FDdsmSender_info* info) {
+        
+        info->twist.vel.x = 1.234;
+        info->twist.vel.y = 1.234;
+        info->twist.vel.z = 1.234;
+	info->twist.rot.x = 3.53;
+	info->twist.rot.y = 3.53;
+	info->twist.rot.z = 3.53;
+
+}
+
+/*
 struct kdl_frame randomFrame() {
         
 	struct kdl_frame ret;
@@ -124,7 +143,24 @@ struct kdl_frame randomFrame() {
 
 	return ret;
 }
+*/
 
+void randomFrame(struct H5FDdsmSender_info* info) {
+
+	info->frame.p.x = 1.322;
+	info->frame.p.y = 1.436;
+	info->frame.p.z = 3.245;
+	info->frame.M.data[0] = 3.5343;
+	info->frame.M.data[1] = 4.235;
+	info->frame.M.data[2] = 4.523;
+	info->frame.M.data[3] = 4.351;
+	info->frame.M.data[4] = 6.521;
+	info->frame.M.data[5] = 5.234;
+	info->frame.M.data[6] = 2.523;
+	info->frame.M.data[7] = 1.623;
+	info->frame.M.data[8] = 2.632;
+
+}
 
 void createGroup(struct H5FDdsmSender_info* sinfo, const char* name);
 
@@ -139,9 +175,10 @@ void init(struct H5FDdsmSender_info* sinfo) {
         //TODO Set the ip and port from config
 	//senderInit(NULL, 0, sinfo->dsmManager, &sinfo->comm);
 	//char ip[] = "10.33.173.147";
-        char ip[] = "10.33.174.62";
+        //char ip[] = "10.33.174.62";
+	senderInitIp(NULL, 0, sinfo->port, sinfo->ip, sinfo->dsmManager, &sinfo->comm);
         /* We made a new function which has IP and port as argument */
-	senderInitIp(NULL, 0, 22000, ip, sinfo->dsmManager, &sinfo->comm);
+	//senderInitIp(NULL, 0, 22000, ip, sinfo->dsmManager, &sinfo->comm);
         //TODO We breakup this function to be able to change the hostname 
         //and port and to be able to resend after first send, see H5FDdsmTest.cxx
 	/*
@@ -218,6 +255,7 @@ hid_t createDatasetDouble(hid_t handle, const char* name, hid_t dataspace_id, do
 static int h5fsnd_init(ubx_block_t *c) {
 	
 	int ret=0;
+        char* port_string;
 
 	DBG(" ");
         if ((c->private_data = calloc(1, sizeof(struct H5FDdsmSender_info)))==NULL) {
@@ -230,7 +268,15 @@ static int h5fsnd_init(ubx_block_t *c) {
 	struct H5FDdsmSender_info* inf;
 
 	inf=(struct H5FDdsmSender_info*) c->private_data;
-	
+
+        /* get config and put inside inf */
+        unsigned int ip_len, port_len;
+        inf->ip = (char *) ubx_config_get_data_ptr(c, "ip", &ip_len);
+        //printf("%s\n", inf->ip);
+        port_string = (char *) ubx_config_get_data_ptr(c, "port", &port_len);
+        //printf("%s\n", port_string);
+        sscanf(port_string, "%u", &inf->port);
+        //printf("%d\n", inf->port);
 	// initiate
 	init(inf);
 
@@ -259,8 +305,8 @@ static void h5fsnd_step(ubx_block_t *c) {
 
         struct H5FDdsmSender_info* inf;
 	uint32_t ret;
-	struct kdl_twist twist;
-	struct kdl_frame fr;
+	//struct kdl_twist twist;
+	//struct kdl_frame fr;
 
         inf=(struct H5FDdsmSender_info*) c->private_data;
 
@@ -281,14 +327,14 @@ static void h5fsnd_step(ubx_block_t *c) {
 	// Receive data from robot
         ubx_port_t* twist_port = ubx_port_get(c, "base_msr_twist");
 	ubx_port_t* frame_port = ubx_port_get(c, "base_msr_odom");
-	ret = read_kdl_twist(twist_port, &twist);
+	ret = read_kdl_twist(twist_port, &inf->twist);
 	if(ret>0) {
 	        DBG("twist changed");
 	} else {
 	        ERR("twist unchanged");
 		//goto out;
 	}
-	ret = read_kdl_frame(frame_port, &fr);
+	ret = read_kdl_frame(frame_port, &inf->frame);
 	if(ret>0) {
 	        DBG("frame changed");
 	} else {
@@ -297,8 +343,10 @@ static void h5fsnd_step(ubx_block_t *c) {
         }
 
         // Randomdata
-	twist = randomTwist();
-	fr = randomFrame();
+	//inf->twist = randomTwist();
+	//inf->frame = randomFrame();
+	randomTwist(inf);
+	randomFrame(inf);
 	// get time
 	//TODO Threadsafe?
 	inf->now = time(NULL);
@@ -328,47 +376,47 @@ static void h5fsnd_step(ubx_block_t *c) {
 	inf->dims[1] = 1;
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/Twist/LinearVelocity/x", inf->dataspace_id,
-	        &twist.vel.x);
+	        &inf->twist.vel.x);
 
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/Twist/LinearVelocity/y", inf->dataspace_id,
-	        &twist.vel.y);
+	        &inf->twist.vel.y);
 
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/Twist/LinearVelocity/z", inf->dataspace_id,
-	        &twist.vel.z);
+	        &inf->twist.vel.z);
 
         // twist rot
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/Twist/RotationalVelocity/x", inf->dataspace_id,
-	        &twist.rot.x);
+	        &inf->twist.rot.x);
 
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/Twist/RotationalVelocity/y", inf->dataspace_id,
-	        &twist.rot.y);
+	        &inf->twist.rot.y);
 
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/Twist/RotationalVelocity/z", inf->dataspace_id,
-	        &twist.rot.z);
+	        &inf->twist.rot.z);
 	// Vector
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/BaseCartesianPosition/Vector/x", inf->dataspace_id, 
-	        &fr.p.x);
+	        &inf->frame.p.x);
 
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/BaseCartesianPosition/Vector/y", inf->dataspace_id,
-	        &fr.p.y);
+	        &inf->frame.p.y);
 	
 	setDataspaceId(inf, 1, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/BaseCartesianPosition/Vector/z", inf->dataspace_id,
-	        &fr.p.z);
+	        &inf->frame.p.z);
 	
 	// Rotation
 	inf->dims[0] = 9;
 	inf->dims[1] =1;
 	setDataspaceId(inf, 2, inf->dims, NULL);
 	inf->dataset_id = createDatasetDouble(inf->hdf5Handle, "/State/BaseCartesianPosition/Rotation/rotation", inf->dataspace_id,
-	        fr.M.data);
+	        inf->frame.M.data);
 
  //out:
 

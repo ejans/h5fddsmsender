@@ -26,7 +26,9 @@ ptrig1=ubx.block_create(ni, "std_triggers/ptrig", "ptrig1")
 
 print("creating instance of 'std_blocks/h5fddsmsender'")
 --hdf5=ubx.block_create(ni, "H5FDdsmSender/H5FDdseSender", "hdf5")
-hdf5=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf5")
+--hdf5=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf5")
+--hdf5=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf5", { ip="10.33.173.147", port="22000"})
+hdf5=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf5", { ip="10.33.174.62", port="22000"})
 
 print("running webif init", ubx.block_init(webif1))
 print("running webif start", ubx.block_start(webif1))
