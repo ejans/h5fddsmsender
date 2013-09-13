@@ -107,12 +107,19 @@ export LD_LIBRARY_PATH=/home/<var>User</var>/h5fddsm/h5fddsm-0.9.9/build/bin/:/h
 ../local/bin/luajit hdf5Send.lua
 </code></pre>
 <p>Or for the youbot we need to create links for some libraries because luajit is runnig as root:</p>
-<pre>
+<pre><code>
 cd /usr/local/lib
 sudo ln -s /home/<var>User</var>/h5fddsm/h5fddsm-0.9.9/build/bin/libH5FDdsm.so.0.9.9
 sudo ln -s /home/<var>User</var>/local/lib/libhdf5.so.7.3.0
 sudo ln -s /home/<var>User</var>/local/lib/libmpl.so.1
 sudo ldconfig
-</pre>
+</code></pre>
+<p>Now we can initialize and run our program trough the webserver.
+</p>
+<p>Open a webbrowser and go to:
+</p>
+<pre><code>
+<var>computer_ip</var>:8888
+</code></pre>
 </body>
 </html>
