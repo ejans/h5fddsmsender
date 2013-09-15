@@ -12,11 +12,7 @@
 #include <H5FDdsmTest.h>
 #include <H5FDdsm.h>
 
-#include "vector.h"
-#include "rotation.h"
-#include "frame.h"
-#include "twist.h"
-#include "state.h"
+#include <kdl.h>
 
 #define FILE "youbot.h5"
 
