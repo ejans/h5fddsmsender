@@ -14,6 +14,11 @@
 
 #include <kdl.h>
 
+#include "types/H5FDdsmSender_config.h"
+#include "types/H5FDdsmSender_config.h.hexarr"
+
+ubx_type_t H5FDdsmSender_config_type = def_struct_type(struct H5FDdsmSender_config, &H5FDdsmSender_config_h);
+
 #define FILE "youbot.h5"
 
 /* function block meta-data
@@ -22,7 +27,7 @@
 char h5fsnd_meta[] =
         "{ doc='A hdf5-data sender function block',"
         "  license='LGPL',"
-	"  real-time=true?,"
+	"  real-time=false,"
 	"}";
 
 /* configuration
@@ -35,9 +40,9 @@ char h5fsnd_meta[] =
 ubx_config_t h5fsnd_config[] = {
         
         //TODO Load configuration
-	//{.name="port", .type_name="int"}, 
-	{.name="port", .type_name="char", .value={.len=10}}, 
-	{.name="ip", .type_name="char", .value={.len=11}}, /* car[11] */
+        {.name="port_ip_config", .type_name="struct H5FDdsmSender_config"},
+	//{.name="port", .type_name="char", .value={.len=10}}, 
+	//{.name="ip", .type_name="char", .value={.len=11}}, /* car[11] */
 
         {NULL},
 };
@@ -251,7 +256,9 @@ hid_t createDatasetDouble(hid_t handle, const char* name, hid_t dataspace_id, do
 static int h5fsnd_init(ubx_block_t *c) {
 	
 	int ret=0;
-        char* port_string;
+        char *port_string;
+        struct H5FDdsmSender_config* senderconf;
+        unsigned int clen;
 
 	DBG(" ");
         if ((c->private_data = calloc(1, sizeof(struct H5FDdsmSender_info)))==NULL) {
@@ -264,8 +271,8 @@ static int h5fsnd_init(ubx_block_t *c) {
 	struct H5FDdsmSender_info* inf;
 
 	inf=(struct H5FDdsmSender_info*) c->private_data;
-
-        /* get config and put inside inf */
+/*
+        // get config and put inside inf
         unsigned int ip_len, port_len;
         inf->ip = (char *) ubx_config_get_data_ptr(c, "ip", &ip_len);
         //printf("%s\n", inf->ip);
@@ -273,6 +280,17 @@ static int h5fsnd_init(ubx_block_t *c) {
         //printf("%s\n", port_string);
         sscanf(port_string, "%u", &inf->port);
         //printf("%d\n", inf->port);
+*/
+        printf("before\n");
+        senderconf = (struct H5FDdsmSender_config*) ubx_config_get_data_ptr(c, "port_ip_config", &clen);
+        printf("after\n");
+        inf->ip = senderconf->ip;
+        port_string = senderconf->port;
+        sscanf(port_string, "%u", &inf->port);
+        printf("port converted to int\n");
+        printf("ip: %s\n", inf->ip);
+        printf("port: %d\n", inf->port);
+
 	// initiate
 	init(inf);
 
@@ -441,6 +459,7 @@ ubx_block_t h5fsnd_comp = {
 static int h5fsnd_mod_init(ubx_node_info_t* ni)
 {
         DBG(" ");
+        ubx_type_register(ni, &H5FDdsmSender_config_type);
         return ubx_block_register(ni, &h5fsnd_comp);
 }
 
