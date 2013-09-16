@@ -281,15 +281,10 @@ static int h5fsnd_init(ubx_block_t *c) {
         sscanf(port_string, "%u", &inf->port);
         //printf("%d\n", inf->port);
 */
-        printf("before\n");
         senderconf = (struct H5FDdsmSender_config*) ubx_config_get_data_ptr(c, "port_ip_config", &clen);
-        printf("after\n");
         inf->ip = senderconf->ip;
         port_string = senderconf->port;
         sscanf(port_string, "%u", &inf->port);
-        printf("port converted to int\n");
-        printf("ip: %s\n", inf->ip);
-        printf("port: %d\n", inf->port);
 
 	// initiate
 	init(inf);
@@ -359,8 +354,8 @@ static void h5fsnd_step(ubx_block_t *c) {
         // Randomdata
 	//inf->twist = randomTwist();
 	//inf->frame = randomFrame();
-	randomTwist(inf);
-	randomFrame(inf);
+	//randomTwist(inf);
+	//randomFrame(inf);
 	// get time
 	//TODO Threadsafe?
 	inf->now = time(NULL);
