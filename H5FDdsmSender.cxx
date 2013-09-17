@@ -61,7 +61,7 @@ struct H5FDdsmSender_info {
 	MPI_Comm comm;
 	H5FDdsmManager* dsmManager;
 	
-	hid_t       file_id, group_id, dataset_id, dataspace_id, hdf5Handle, fapl;  /* identifiers */
+	hid_t       file_id, group_id, dataset_id, dataspace_id, hdf5Handle, fapl, attribute_id;  /* identifiers */
 	hsize_t     dims[2];
 	herr_t      status;
 	//time_t      now;
@@ -77,15 +77,12 @@ def_read_fun(read_kdl_frame, struct kdl_frame)
 
 void createGroup(struct H5FDdsmSender_info* sinfo, const char* name);
 
-void createGroups(struct H5FDdsmSender_info* sinfo);
-
-void init(struct H5FDdsmSender_info* sinfo) {
-
-}
+void createAttribute(struct H5FDdsmSender_info* sinfo, const char* name);
 
 void createGroups(struct H5FDdsmSender_info* sinfo) {
 	
 	createGroup(sinfo, "/State");
+        //createAttribute(sinfo, "Description");
 	createGroup(sinfo, "/State/TimeStamp");
 	createGroup(sinfo, "State/Twist");
 	createGroup(sinfo, "State/Twist/RotationalVelocity");
@@ -99,6 +96,16 @@ void createGroup(struct H5FDdsmSender_info* sinfo, const char* name) {
         
 	sinfo->group_id = H5Gcreate2(sinfo->hdf5Handle, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 	H5Gclose(sinfo->group_id);
+}
+
+void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* max_dims);
+
+void createAttribute(struct H5FDdsmSender_info* sinfo, const char* name) {
+
+        setDataspaceId(sinfo, 1, NULL);
+        sinfo->attribute_id = H5Acreate2(sinfo->hdf5Handle, name, H5T_C_S1, sinfo->dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+        H5Awrite(sinfo->attribute_id, H5T_C_S1, "This is a simple description");
+        H5Aclose(sinfo->attribute_id);
 }
 
 void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* max_dims) {

@@ -47,6 +47,17 @@ ubx.block_start(fifo)
 ubx.block_start(fifo2)
 print("fifo blocks started!")
 
+print("starting random_kdl")
+ubx.block_init(random_kdl1)
+ubx.block_start(random_kdl1)
+
+print("starting hdf51")
+ubx.block_init(hdf51)
+ubx.block_start(hdf51)
+
+--print("initializing ptrig1")
+--ubx.block_init(ptrig1)
+
 --- Move with a given twist.
 -- @param twist table.
 -- @param dur duration in seconds
