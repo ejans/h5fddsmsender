@@ -267,7 +267,7 @@ static void h5fsnd_step(ubx_block_t *c) {
 	// Rotation
 	inf->dims[0] = 9;
 	inf->dims[1] =1;
-	setDataspaceId(inf, 2, NULL);
+	setDataspaceId(inf, 1, NULL);
 	inf->dataset_id = createDatasetDouble(inf, "/State/BaseCartesianPosition/Rotation/rotation", frame.M.data);
 
  out:
