@@ -108,8 +108,6 @@ void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* max_dim
 
 hid_t createDatasetChar(H5FDdsmSender_info* inf, const char* name, char* data) {
 	
-	//hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_NATIVE_CHAR, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT, 
-	        //H5P_DEFAULT);
 	hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_C_S1, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT, 
 	        H5P_DEFAULT);
 	H5Dwrite(dataset_id, H5T_C_S1, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
@@ -190,21 +188,21 @@ static void h5fsnd_step(ubx_block_t *c) {
 
         inf=(struct H5FDdsmSender_info*) c->private_data;
 
-	// Set file access property list for DSM
+	/* Set file access property list for DSM */
 	inf->fapl = H5Pcreate(H5P_FILE_ACCESS);
-	// Use DSM driver
+	/* Use DSM driver */
 	H5Pset_fapl_dsm(inf->fapl, inf->comm, NULL, 0);
-	// Create DSM
+	/* Create DSM */
 	inf->hdf5Handle = H5Fcreate(FILE, H5F_ACC_TRUNC, H5P_DEFAULT, inf->fapl);
-	// Close file access property list
+	/* Close file access property list */
 	H5Pclose(inf->fapl);
-        // Create all groups
+        /* Create all groups */
 	createGroups(inf);
 
-	// Receive data from robot
+	/* Receive data from robot */
         ubx_port_t* twist_port = ubx_port_get(c, "base_msr_twist");
 	ubx_port_t* frame_port = ubx_port_get(c, "base_msr_odom");
-	//ret = read_kdl_twist(twist_port, &inf->twist);
+
 	ret = read_kdl_twist(twist_port, &twist);
 	if(ret>0) {
 	        DBG("twist changed");
@@ -223,11 +221,10 @@ static void h5fsnd_step(ubx_block_t *c) {
 	/* get time */
 	//TODO Threadsafe?
 	now = time(NULL);
-        // put time in string
+        /* put time in string */
 	time_string = ctime(&now);
         /* View time */
         DBG("time: %s\n", time_string);
-        //printf("time: %s\n", time_string);
 
 	/* Create hdf5 file and send it out */
 	inf->dims[0] = 24;
@@ -305,7 +302,6 @@ static void h5fsnd_mod_cleanup(ubx_node_info_t *ni)
         DBG(" ");
         ubx_block_unregister(ni, "std_blocks/h5fddsmsender");
 }
-
 
 module_init(h5fsnd_mod_init)
 module_cleanup(h5fsnd_mod_cleanup)
