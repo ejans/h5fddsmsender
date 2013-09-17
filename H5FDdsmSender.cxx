@@ -1,6 +1,7 @@
 /*
  * A fblock that sends a HDF5 file to a server
  */
+#define DEBUG 1
 
 #include <stdio.h>
 #include <time.h>
@@ -118,9 +119,9 @@ hid_t createDatasetChar(H5FDdsmSender_info* inf, const char* name, char* data) {
 
 hid_t createDatasetDouble(H5FDdsmSender_info* inf, const char* name, double* data) {
 	
-	hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_IEEE_F64BE, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
+	hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_NATIVE_DOUBLE, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
 	        H5P_DEFAULT);
-	H5Dwrite(dataset_id, H5T_IEEE_F64BE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+	H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
 	H5Sclose(inf->dataspace_id);
 	H5Dclose(dataset_id);
 
@@ -223,8 +224,8 @@ static void h5fsnd_step(ubx_block_t *c) {
         // put time in string
 	time_string = ctime(&now);
         /* View time */
-        //DBG("time: %s\n", inf->time_string);
-        printf("time: %s\n", time_string);
+        DBG("time: %s\n", time_string);
+        //printf("time: %s\n", time_string);
 
 	/* Create hdf5 file and send it out */
 	inf->dims[0] = 24;
