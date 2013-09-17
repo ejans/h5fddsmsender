@@ -108,9 +108,11 @@ void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* max_dim
 
 hid_t createDatasetChar(H5FDdsmSender_info* inf, const char* name, char* data) {
 	
-	hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_NATIVE_CHAR, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT, 
+	//hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_NATIVE_CHAR, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT, 
+	        //H5P_DEFAULT);
+	hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_C_S1, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT, 
 	        H5P_DEFAULT);
-	H5Dwrite(dataset_id, H5T_NATIVE_CHAR, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+	H5Dwrite(dataset_id, H5T_C_S1, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
 	H5Sclose(inf->dataspace_id);
 	H5Dclose(dataset_id);
 

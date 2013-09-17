@@ -20,11 +20,11 @@ print("creating instance of 'webif/webif'")
 webif1=ubx.block_create(ni, "webif/webif", "webif1", { port="8888" })
 
 print("creating instance of 'random_kdl/random_kdl'")
-random_kdl1=ubx.block_create(ni, "random_kdl/random_kdl", "random_kdl1", {min_max_config={min=32, max=127}})
+random_kdl1=ubx.block_create(ni, "random_kdl/random_kdl", "random_kdl1", {min_max_config={min=0, max=10}})
 
 print("creating instance of 'std_blocks/h5fddsmsender'")
---hdf51=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf51", { port_ip_config={ip="10.33.172.170", port="22000"}})
-hdf51=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf51", { port_ip_config={ip="192.168.10.171", port="22000"}})
+hdf51=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf51", { port_ip_config={ip="10.33.172.170", port="22000"}})
+--hdf51=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf51", { port_ip_config={ip="192.168.10.171", port="22000"}})
 
 print("creating instance of 'std_triggers/ptrig'")
 ptrig1=ubx.block_create(ni, "std_triggers/ptrig", "ptrig1", {
