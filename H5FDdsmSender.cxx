@@ -77,7 +77,7 @@ def_read_fun(read_kdl_frame, struct kdl_frame)
 
 void createGroup(struct H5FDdsmSender_info* sinfo, const char* name);
 
-void createAttribute(struct H5FDdsmSender_info* sinfo, const char* name);
+//void createAttribute(struct H5FDdsmSender_info* sinfo, const char* name);
 
 void createGroups(struct H5FDdsmSender_info* sinfo) {
 	
@@ -98,6 +98,7 @@ void createGroup(struct H5FDdsmSender_info* sinfo, const char* name) {
 	H5Gclose(sinfo->group_id);
 }
 
+/*
 void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* max_dims);
 
 void createAttribute(struct H5FDdsmSender_info* sinfo, const char* name) {
@@ -108,6 +109,7 @@ void createAttribute(struct H5FDdsmSender_info* sinfo, const char* name) {
         H5Aclose(sinfo->attribute_id);
 }
 
+*/
 void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* max_dims) {
 	
 	sinfo->dataspace_id = H5Screate_simple(rank, sinfo->dims, max_dims);
@@ -310,5 +312,5 @@ static void h5fsnd_mod_cleanup(ubx_node_info_t *ni)
         ubx_block_unregister(ni, "std_blocks/h5fddsmsender");
 }
 
-module_init(h5fsnd_mod_init)
-module_cleanup(h5fsnd_mod_cleanup)
+UBX_MODULE_INIT(h5fsnd_mod_init)
+UBX_MODULE_CLEANUP(h5fsnd_mod_cleanup)

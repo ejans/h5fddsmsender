@@ -3,12 +3,12 @@ include $(ROOT_DIR)/make.conf
 CC=clang++
 INCLUDE_DIR=$(ROOT_DIR)/src/
 # Set this to the directory where you installed h5fddsm
-H5FDDSM_DIR=$(HOME)/h5fddsm/h5fddsm-0.9.9/
+H5FDDSM_DIR=$(HOME)/h5fddsm/h5fddsm-0.9.9
 #H5FDDSM_DIR=$(KUL)/h5fddsm/h5fddsm-0.9.9/
 # Set this to the directory where you installed the dependencies of h5fddsm
 #LOCAL_DIR=/usr/local/
-LOCAL_DIR=$(HOME)/local/
-KDL_DIR=$(ROOT_DIR)/std_types/kdl/types/
+LOCAL_DIR=$(HOME)/local
+KDL_DIR=$(ROOT_DIR)/std_types/kdl/types
 
 TYPES:=$(wildcard types/*.h)
 HEXARRS:=$(TYPES:%=%.hexarr)
