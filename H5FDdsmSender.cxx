@@ -1,7 +1,7 @@
 /*
  * A fblock that sends a HDF5 file to a server
  */
-#define DEBUG 1
+//#define DEBUG 1
 
 #include <stdio.h>
 #include <time.h>
