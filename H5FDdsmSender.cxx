@@ -77,12 +77,9 @@ def_read_fun(read_kdl_frame, struct kdl_frame)
 
 void createGroup(struct H5FDdsmSender_info* sinfo, const char* name);
 
-//void createAttribute(struct H5FDdsmSender_info* sinfo, const char* name);
-
 void createGroups(struct H5FDdsmSender_info* sinfo) {
 	
 	createGroup(sinfo, "/State");
-        //createAttribute(sinfo, "Description");
 	createGroup(sinfo, "/State/TimeStamp");
 	createGroup(sinfo, "State/Twist");
 	createGroup(sinfo, "State/Twist/RotationalVelocity");
@@ -98,43 +95,53 @@ void createGroup(struct H5FDdsmSender_info* sinfo, const char* name) {
 	H5Gclose(sinfo->group_id);
 }
 
-/*
 void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* max_dims);
 
-void createAttribute(struct H5FDdsmSender_info* sinfo, const char* name) {
+void createStringAttribute(struct H5FDdsmSender_info* sinfo, const char* name, char* data) {
 
         setDataspaceId(sinfo, 1, NULL);
-        sinfo->attribute_id = H5Acreate2(sinfo->hdf5Handle, name, H5T_C_S1, sinfo->dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-        H5Awrite(sinfo->attribute_id, H5T_C_S1, "This is a simple description");
+        hid_t atype = H5Tcopy(H5T_C_S1);
+        H5Tset_size(atype, strlen(data));
+        H5Tset_strpad(atype,H5T_STR_NULLTERM);
+
+        sinfo->attribute_id = H5Acreate2(sinfo->dataset_id, name, atype, sinfo->dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+        H5Awrite(sinfo->attribute_id, atype, data);
         H5Aclose(sinfo->attribute_id);
 }
 
-*/
 void setDataspaceId(struct H5FDdsmSender_info* sinfo, int rank, hsize_t* max_dims) {
 	
 	sinfo->dataspace_id = H5Screate_simple(rank, sinfo->dims, max_dims);
 }
 
-hid_t createDatasetChar(H5FDdsmSender_info* inf, const char* name, char* data) {
-	
-	hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_C_S1, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT, 
-	        H5P_DEFAULT);
-	H5Dwrite(dataset_id, H5T_C_S1, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
-	H5Sclose(inf->dataspace_id);
-	H5Dclose(dataset_id);
+void closeDataspace(struct H5FDdsmSender_info* sinfo) {
 
-	return dataset_id;
+        H5Sclose(sinfo->dataspace_id);
 }
 
-hid_t createDatasetDouble(H5FDdsmSender_info* inf, const char* name, double* data) {
-	
-	hid_t dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_NATIVE_DOUBLE, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
-	        H5P_DEFAULT);
-	H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
-	H5Sclose(inf->dataspace_id);
-	H5Dclose(dataset_id);
+void closeDataset(struct H5FDdsmSender_info* sinfo) {
+        
+        H5Dclose(sinfo->dataset_id);
+}
 
-	return dataset_id;
+void createDatasetChar(H5FDdsmSender_info* inf, const char* name, char* data) {
+	
+        hid_t atype = H5Tcopy(H5T_C_S1);
+        H5Tset_size(atype, strlen(data));
+        H5Tset_strpad(atype,H5T_STR_NULLTERM);
+
+	inf->dataset_id = H5Dcreate2(inf->hdf5Handle, name, atype, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT, 
+	        H5P_DEFAULT);
+	H5Dwrite(inf->dataset_id, atype, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+
+}
+
+void createDatasetDouble(H5FDdsmSender_info* inf, const char* name, double* data) {
+	
+	inf->dataset_id = H5Dcreate2(inf->hdf5Handle, name, H5T_NATIVE_DOUBLE, inf->dataspace_id, H5P_DEFAULT, H5P_DEFAULT,
+	        H5P_DEFAULT);
+	H5Dwrite(inf->dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+
 }
 
 static int h5fsnd_init(ubx_block_t *c) {
@@ -236,48 +243,70 @@ static void h5fsnd_step(ubx_block_t *c) {
         DBG("time: %s\n", time_string);
 
 	/* Create hdf5 file and send it out */
-	inf->dims[0] = 24;
-	inf->dims[1] = 1;
-	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetChar(inf, "/State/TimeStamp/timestamp", time_string);
-	
-	/* twist lin */
 	inf->dims[0] = 1;
 	inf->dims[1] = 1;
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/Twist/LinearVelocity/x", &twist.vel.x);
+	createDatasetChar(inf, "/State/TimeStamp/timestamp", time_string);
+        /* Add attribute */
+	createStringAttribute(inf, "TimestampAttribute", time_string);
+        closeDataspace(inf);
+        closeDataset(inf);
+	
+	/* twist lin */
+	setDataspaceId(inf, 1, NULL);
+	createDatasetDouble(inf, "/State/Twist/LinearVelocity/x", &twist.vel.x);
+        closeDataspace(inf);
+        closeDataset(inf);
 
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/Twist/LinearVelocity/y", &twist.vel.y);
+	createDatasetDouble(inf, "/State/Twist/LinearVelocity/y", &twist.vel.y);
+        closeDataspace(inf);
+        closeDataset(inf);
 
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/Twist/LinearVelocity/z", &twist.vel.z);
+	createDatasetDouble(inf, "/State/Twist/LinearVelocity/z", &twist.vel.z);
+        closeDataspace(inf);
+        closeDataset(inf);
 
         /* twist rot */
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/Twist/RotationalVelocity/x", &twist.rot.x);
+	createDatasetDouble(inf, "/State/Twist/RotationalVelocity/x", &twist.rot.x);
+        closeDataspace(inf);
+        closeDataset(inf);
 
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/Twist/RotationalVelocity/y", &twist.rot.y);
+	createDatasetDouble(inf, "/State/Twist/RotationalVelocity/y", &twist.rot.y);
+        closeDataspace(inf);
+        closeDataset(inf);
 
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/Twist/RotationalVelocity/z", &twist.rot.z);
+	createDatasetDouble(inf, "/State/Twist/RotationalVelocity/z", &twist.rot.z);
+        closeDataspace(inf);
+        closeDataset(inf);
 
 	/* Vector */
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/BaseCartesianPosition/Vector/x", &frame.p.x);
+	createDatasetDouble(inf, "/State/BaseCartesianPosition/Vector/x", &frame.p.x);
+        closeDataspace(inf);
+        closeDataset(inf);
 
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/BaseCartesianPosition/Vector/y", &frame.p.y);
+	createDatasetDouble(inf, "/State/BaseCartesianPosition/Vector/y", &frame.p.y);
+        closeDataspace(inf);
+        closeDataset(inf);
 	
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/BaseCartesianPosition/Vector/z", &frame.p.z);
+	createDatasetDouble(inf, "/State/BaseCartesianPosition/Vector/z", &frame.p.z);
+        closeDataspace(inf);
+        closeDataset(inf);
 	
 	// Rotation
 	inf->dims[0] = 9;
 	inf->dims[1] =1;
 	setDataspaceId(inf, 1, NULL);
-	inf->dataset_id = createDatasetDouble(inf, "/State/BaseCartesianPosition/Rotation/rotation", frame.M.data);
+	createDatasetDouble(inf, "/State/BaseCartesianPosition/Rotation/rotation", frame.M.data);
+        closeDataspace(inf);
+        closeDataset(inf);
 
  out:
 
