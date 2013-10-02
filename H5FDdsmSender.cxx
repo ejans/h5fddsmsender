@@ -367,44 +367,48 @@ static void h5fsnd_step(ubx_block_t *c) {
         closeDataspace(inf);
         closeDataset(inf);
 
+        /*
         // BaseMotorInfo
-	//inf->dims[0] = 4;
-	//inf->dims[1] =1;
-	//setDataspaceId(inf, 1, NULL);
-	////createDatasetDouble(inf, "/State/BaseMotorInfo/Position", baseInfo.pos);
-	//createDatasetInteger(inf, "/State/BaseMotorInfo/Position", baseInfo.pos);
-        //closeDataspace(inf);
-        //closeDataset(inf);
+	inf->dims[0] = 4;
+	inf->dims[1] =1;
+	setDataspaceId(inf, 1, NULL);
+	//createDatasetDouble(inf, "/State/BaseMotorInfo/Position", baseInfo.pos);
+	createDatasetInteger(inf, "/State/BaseMotorInfo/Position", baseInfo.pos);
+        closeDataspace(inf);
+        closeDataset(inf);
 
-	//setDataspaceId(inf, 1, NULL);
-	//createDatasetInteger(inf, "/State/BaseMotorInfo/Velocity", baseInfo.vel);
-        //closeDataspace(inf);
-        //closeDataset(inf);
+	setDataspaceId(inf, 1, NULL);
+	createDatasetInteger(inf, "/State/BaseMotorInfo/Velocity", baseInfo.vel);
+        closeDataspace(inf);
+        closeDataset(inf);
 
-	//setDataspaceId(inf, 1, NULL);
-	//createDatasetInteger(inf, "/State/BaseMotorInfo/Current", baseInfo.cur);
-        //closeDataspace(inf);
-        //closeDataset(inf);
+	setDataspaceId(inf, 1, NULL);
+	createDatasetInteger(inf, "/State/BaseMotorInfo/Current", baseInfo.cur);
+        closeDataspace(inf);
+        closeDataset(inf);
 
-        //// ArmMotorInfo 
-	//inf->dims[0] = 5;
-	//inf->dims[1] =1;
-	//setDataspaceId(inf, 1, NULL);
-	//createDatasetInteger(inf, "/State/ArmMotorInfo/Position", armInfo.pos);
-        //closeDataspace(inf);
-        //closeDataset(inf);
+        // ArmMotorInfo 
+	inf->dims[0] = 5;
+	inf->dims[1] =1;
+	setDataspaceId(inf, 1, NULL);
+	createDatasetInteger(inf, "/State/ArmMotorInfo/Position", armInfo.pos);
+        closeDataspace(inf);
+        closeDataset(inf);
 
-	//setDataspaceId(inf, 1, NULL);
-	//createDatasetInteger(inf, "/State/ArmMotorInfo/Velocity", armInfo.vel);
-        //closeDataspace(inf);
-        //closeDataset(inf);
+	setDataspaceId(inf, 1, NULL);
+	createDatasetInteger(inf, "/State/ArmMotorInfo/Velocity", armInfo.vel);
+        closeDataspace(inf);
+        closeDataset(inf);
 
-	//setDataspaceId(inf, 1, NULL);
-	//createDatasetInteger(inf, "/State/ArmMotorInfo/Current", armInfo.cur);
-        //closeDataspace(inf);
-        //closeDataset(inf);
+	setDataspaceId(inf, 1, NULL);
+	createDatasetInteger(inf, "/State/ArmMotorInfo/Current", armInfo.cur);
+        closeDataspace(inf);
+        closeDataset(inf);
+        */
 
         // JointState
+	inf->dims[0] = 5;
+	inf->dims[1] =1;
 	setDataspaceId(inf, 1, NULL);
 	createDatasetDouble(inf, "/State/JointStates/Position", armState.pos);
         closeDataspace(inf);
@@ -416,7 +420,7 @@ static void h5fsnd_step(ubx_block_t *c) {
         closeDataset(inf);
 
 	setDataspaceId(inf, 1, NULL);
-	createDatasetDouble(inf, "/State/JointStates/Effect", armState.eff);
+	createDatasetDouble(inf, "/State/JointStates/Effort", armState.eff);
         closeDataspace(inf);
         closeDataset(inf);
 
