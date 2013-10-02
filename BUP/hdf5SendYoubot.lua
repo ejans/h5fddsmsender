@@ -305,10 +305,10 @@ end
 -- fifo connect
 fifo1=ubx.conn_lfds_cyclic(youbot1, "base_msr_twist", hdf51, "base_msr_twist", 1, true);
 fifo2=ubx.conn_lfds_cyclic(youbot1, "base_msr_odom", hdf51, "base_msr_odom", 1, true);
-fifo3=ubx.conn_lfds_cyclic(youbot1, "base_motorinfo", hdf51, "base_motorinfo", 1, true);
-fifo4=ubx.conn_lfds_cyclic(youbot1, "arm1_motorinfo", hdf51, "arm1_motorinfo", 1, true);
+--fifo3=ubx.conn_lfds_cyclic(youbot1, "base_motorinfo", hdf51, "base_motorinfo", 1, true);
+--fifo4=ubx.conn_lfds_cyclic(youbot1, "arm1_motorinfo", hdf51, "arm1_motorinfo", 1, true);
 fifo5=ubx.conn_lfds_cyclic(youbot1, "arm1_state", hdf51, "arm1_state", 1, true);
-fifo6=ubx.conn_lfds_cyclic(youbot1, "arm1_gripper", hdf51, "arm1_gripper", 1, true);
+--fifo6=ubx.conn_lfds_cyclic(youbot1, "arm1_gripper", hdf51, "arm1_gripper", 1, true);
 
 -- start and init webif and youbot
 assert(ubx.block_init(ptrig1))
@@ -324,10 +324,10 @@ assert(ubx.block_start(file_rep1)==0)
 -- start fifos
 assert(ubx.block_start(fifo1)==0)
 assert(ubx.block_start(fifo2)==0)
-assert(ubx.block_start(fifo3)==0)
-assert(ubx.block_start(fifo4)==0)
+--assert(ubx.block_start(fifo3)==0)
+--assert(ubx.block_start(fifo4)==0)
 assert(ubx.block_start(fifo5)==0)
-assert(ubx.block_start(fifo6)==0)
+--assert(ubx.block_start(fifo6)==0)
 
 assert(ubx.block_start(hdf51)==0)
 assert(ubx.block_start(youbot1)==0)

@@ -81,10 +81,10 @@ struct H5FDdsmSender_info {
 /* convenience functions to read/write from the ports */
 def_read_fun(read_kdl_twist, struct kdl_twist)
 def_read_fun(read_kdl_frame, struct kdl_frame)
-def_read_fun(read_base_motorinfo, struct youbot_base_motorinfo)
-def_read_fun(read_arm_motorinfo, struct youbot_arm_motorinfo)
+//def_read_fun(read_base_motorinfo, struct youbot_base_motorinfo)
+//def_read_fun(read_arm_motorinfo, struct youbot_arm_motorinfo)
 def_read_fun(read_arm_state, struct motionctrl_jnt_state)
-def_read_fun(read_gripper_state, int32_t)
+//def_read_fun(read_gripper_state, int32_t)
 
 void createGroup(struct H5FDdsmSender_info* sinfo, const char* name);
 
@@ -221,10 +221,10 @@ static void h5fsnd_step(ubx_block_t *c) {
 	uint32_t ret;
 	struct kdl_twist twist;
 	struct kdl_frame frame;
-        struct youbot_base_motorinfo baseInfo;
-        struct youbot_arm_motorinfo armInfo;
+        //struct youbot_base_motorinfo baseInfo;
+        //struct youbot_arm_motorinfo armInfo;
         struct motionctrl_jnt_state armState;
-        int32_t gripperState;
+        //int32_t gripperState;
 
         time_t now;
         char* time_string;
@@ -245,10 +245,10 @@ static void h5fsnd_step(ubx_block_t *c) {
 	/* Receive data from robot */
         ubx_port_t* twist_port = ubx_port_get(c, "base_msr_twist");
 	ubx_port_t* frame_port = ubx_port_get(c, "base_msr_odom");
-        ubx_port_t* base_info_port = ubx_port_get(c, "base_motorinfo");
-        ubx_port_t* arm_info_port = ubx_port_get(c, "arm1_motorinfo");
+        //ubx_port_t* base_info_port = ubx_port_get(c, "base_motorinfo");
+        //ubx_port_t* arm_info_port = ubx_port_get(c, "arm1_motorinfo");
         ubx_port_t* arm_state_port = ubx_port_get(c, "arm1_state");
-        ubx_port_t* gripper_state_port = ubx_port_get(c, "arm1_gripper");
+        //ubx_port_t* gripper_state_port = ubx_port_get(c, "arm1_gripper");
 
 	ret = read_kdl_twist(twist_port, &twist);
 	if(ret>0) {
@@ -264,20 +264,20 @@ static void h5fsnd_step(ubx_block_t *c) {
 	        ERR("frame unchanged");
 		goto out;
         }
-        ret = read_base_motorinfo(base_info_port, &baseInfo);
-	if(ret>0) {
-	        DBG("baseInfo changed");
-	} else {
-	        ERR("baseInfo unchanged");
-		goto out;
-        }
-        ret = read_arm_motorinfo(arm_info_port, &armInfo);
-	if(ret>0) {
-	        DBG("armInfo changed");
-	} else {
-	        ERR("armInfo unchanged");
-		goto out;
-        }
+        //ret = read_base_motorinfo(base_info_port, &baseInfo);
+	//if(ret>0) {
+	        //DBG("baseInfo changed");
+	//} else {
+	        //ERR("baseInfo unchanged");
+		//goto out;
+        //}
+        //ret = read_arm_motorinfo(arm_info_port, &armInfo);
+	//if(ret>0) {
+	        //DBG("armInfo changed");
+	//} else {
+	        //ERR("armInfo unchanged");
+		//goto out;
+        //}
         ret = read_arm_state(arm_state_port, &armState);
 	if(ret>0) {
 	        DBG("armState changed");
@@ -285,13 +285,13 @@ static void h5fsnd_step(ubx_block_t *c) {
 	        ERR("armState unchanged");
 		goto out;
         }
-        ret = read_gripper_state(gripper_state_port, &gripperState);
-	if(ret>0) {
-	        DBG("gripperState changed");
-	} else {
-	        ERR("gripperState unchanged");
-		goto out;
-        }
+        //ret = read_gripper_state(gripper_state_port, &gripperState);
+	//if(ret>0) {
+	        //DBG("gripperState changed");
+	//} else {
+	        //ERR("gripperState unchanged");
+		//goto out;
+        //}
        
 	/* get time */
 	//TODO Threadsafe?
@@ -368,41 +368,41 @@ static void h5fsnd_step(ubx_block_t *c) {
         closeDataset(inf);
 
         // BaseMotorInfo
-	inf->dims[0] = 4;
-	inf->dims[1] =1;
-	setDataspaceId(inf, 1, NULL);
-	//createDatasetDouble(inf, "/State/BaseMotorInfo/Position", baseInfo.pos);
-	createDatasetInteger(inf, "/State/BaseMotorInfo/Position", baseInfo.pos);
-        closeDataspace(inf);
-        closeDataset(inf);
+	//inf->dims[0] = 4;
+	//inf->dims[1] =1;
+	//setDataspaceId(inf, 1, NULL);
+	////createDatasetDouble(inf, "/State/BaseMotorInfo/Position", baseInfo.pos);
+	//createDatasetInteger(inf, "/State/BaseMotorInfo/Position", baseInfo.pos);
+        //closeDataspace(inf);
+        //closeDataset(inf);
 
-	setDataspaceId(inf, 1, NULL);
-	createDatasetInteger(inf, "/State/BaseMotorInfo/Velocity", baseInfo.vel);
-        closeDataspace(inf);
-        closeDataset(inf);
+	//setDataspaceId(inf, 1, NULL);
+	//createDatasetInteger(inf, "/State/BaseMotorInfo/Velocity", baseInfo.vel);
+        //closeDataspace(inf);
+        //closeDataset(inf);
 
-	setDataspaceId(inf, 1, NULL);
-	createDatasetInteger(inf, "/State/BaseMotorInfo/Current", baseInfo.cur);
-        closeDataspace(inf);
-        closeDataset(inf);
+	//setDataspaceId(inf, 1, NULL);
+	//createDatasetInteger(inf, "/State/BaseMotorInfo/Current", baseInfo.cur);
+        //closeDataspace(inf);
+        //closeDataset(inf);
 
-        // ArmMotorInfo 
-	inf->dims[0] = 5;
-	inf->dims[1] =1;
-	setDataspaceId(inf, 1, NULL);
-	createDatasetInteger(inf, "/State/ArmMotorInfo/Position", armInfo.pos);
-        closeDataspace(inf);
-        closeDataset(inf);
+        //// ArmMotorInfo 
+	//inf->dims[0] = 5;
+	//inf->dims[1] =1;
+	//setDataspaceId(inf, 1, NULL);
+	//createDatasetInteger(inf, "/State/ArmMotorInfo/Position", armInfo.pos);
+        //closeDataspace(inf);
+        //closeDataset(inf);
 
-	setDataspaceId(inf, 1, NULL);
-	createDatasetInteger(inf, "/State/ArmMotorInfo/Velocity", armInfo.vel);
-        closeDataspace(inf);
-        closeDataset(inf);
+	//setDataspaceId(inf, 1, NULL);
+	//createDatasetInteger(inf, "/State/ArmMotorInfo/Velocity", armInfo.vel);
+        //closeDataspace(inf);
+        //closeDataset(inf);
 
-	setDataspaceId(inf, 1, NULL);
-	createDatasetInteger(inf, "/State/ArmMotorInfo/Current", armInfo.cur);
-        closeDataspace(inf);
-        closeDataset(inf);
+	//setDataspaceId(inf, 1, NULL);
+	//createDatasetInteger(inf, "/State/ArmMotorInfo/Current", armInfo.cur);
+        //closeDataspace(inf);
+        //closeDataset(inf);
 
         // JointState
 	setDataspaceId(inf, 1, NULL);
@@ -421,12 +421,12 @@ static void h5fsnd_step(ubx_block_t *c) {
         closeDataset(inf);
 
         // GripperState
-	inf->dims[0] = 1;
-	inf->dims[1] =1;
-	setDataspaceId(inf, 1, NULL);
-	createDatasetInteger(inf, "/State/GripperState", &gripperState);
-        closeDataspace(inf);
-        closeDataset(inf);
+	//inf->dims[0] = 1;
+	//inf->dims[1] =1;
+	//setDataspaceId(inf, 1, NULL);
+	//createDatasetInteger(inf, "/State/GripperState", &gripperState);
+        //closeDataspace(inf);
+        //closeDataset(inf);
  out:
 
 	H5Fclose(inf->hdf5Handle);
