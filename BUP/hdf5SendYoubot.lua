@@ -17,7 +17,7 @@ ubx.load_module(ni, "std_blocks/youbot_driver/youbot_driver.so")
 ubx.load_module(ni, "std_blocks/h5fddsmsender/H5FDdsmSender.so")
 ubx.load_module(ni, "std_blocks/lfds_buffers/lfds_cyclic.so")
 ubx.load_module(ni, "std_blocks/ptrig/ptrig.so")
-ubx.load_module(ni, "std_blocks/reporter/file_rep.so")
+ubx.load_module(ni, "std_blocks/logging/file_logger.so")
 
 -- create necessary blocks
 print("creating instance of 'webif/webif'")
@@ -31,25 +31,28 @@ ptrig1=ubx.block_create(ni, "std_triggers/ptrig", "ptrig1",
                         { period={sec=0, usec=1000 }, sched_policy="SCHED_FIFO", sched_priority=80,
                           trig_blocks={ { b=youbot1, num_steps=1, measure=0 } } } )
 
-print("creating instance of 'reporter/file_rep'")
+print("creating instance of 'logging/file_logger'")
 
-rep_conf=[[
+logger_conf=[[
 {
    { blockname='youbot1', portname="base_motorinfo", buff_len=3, },
    { blockname='youbot1', portname="arm1_motorinfo", buff_len=3, },
-   { blockname='youbot1', portname="arm1_state", buff_len=3 },
+   { blockname='youbot1', portname="arm1_state", buff_len=3, }
 }
 ]]
 
-file_rep1=ubx.block_create(ni, "reporter/file_rep", "file_rep1",
+file_log1=ubx.block_create(ni, "logging/file_logger", "file_log1",
                            {filename=os.date("%Y%m%d_%H%M%S")..'_report.dat',
                             separator=',',
-                            report_conf=rep_conf})
+                            timestamp=1,
+                            report_conf=logger_conf})
+
+
 
 print("creating instance of 'std_triggers/ptrig'")
 ptrig2=ubx.block_create(ni, "std_triggers/ptrig", "ptrig2",
                         { period={sec=0, usec=250000 },
-                          trig_blocks={ { b=file_rep1, num_steps=1, measure=0 } } } )
+                          trig_blocks={ { b=file_log1, num_steps=1, measure=0 } } } )
 
 print("creating instance of 'std_blocks/h5fddsmsender'")
 --hdf51=ubx.block_create(ni, "std_blocks/h5fddsmsender", "hdf51", { port_ip_config={ip="10.33.172.170", port="22000"}})
@@ -314,13 +317,14 @@ fifo5=ubx.conn_lfds_cyclic(youbot1, "arm1_state", hdf51, "arm1_state", 1, true);
 assert(ubx.block_init(ptrig1))
 assert(ubx.block_init(ptrig2))
 assert(ubx.block_init(ptrig3))
-assert(ubx.block_init(file_rep1))
+
+assert(ubx.block_init(file_log1))
 assert(ubx.block_init(hdf51))
 assert(ubx.block_init(webif1)==0)
 assert(ubx.block_init(youbot1)==0)
 
 assert(ubx.block_start(webif1)==0)
-assert(ubx.block_start(file_rep1)==0)
+assert(ubx.block_start(file_log1)==0)
 -- start fifos
 assert(ubx.block_start(fifo1)==0)
 assert(ubx.block_start(fifo2)==0)
