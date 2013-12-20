@@ -16,3 +16,5 @@ environments)
 
 #Task List
 - resolve motorinfo ports issue
+- refine timestamp to microseconds range
+- make configurable
