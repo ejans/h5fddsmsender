@@ -17,4 +17,7 @@ environments)
 #Task List
 - resolve motorinfo ports issue
 - refine timestamp to microseconds range
-- make configurable
+- make configurable:
+	- put groups needed in config (char[][]?)
+	- seperate string_attribute, dataset_char, dataset_double, dataset_integer
+	- configurable ports? --> create dataset according to these ports?
