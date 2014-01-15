@@ -23,3 +23,6 @@ environments)
 	- put groups needed in config (char[][]?)
 	- seperate string_attribute, dataset_char, dataset_double, dataset_integer
 	- configurable ports? --> create dataset according to these ports?
+- Alternative: do all hdf5 stuff inside Luascript?
+- See logging block for configurable port readout
+- Use tables in lua? or semicolon separated list in C
