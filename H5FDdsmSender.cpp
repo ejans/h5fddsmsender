@@ -23,6 +23,12 @@
 #include <hdf5.h>
 #include <cstdlib>
 
+//cpp parts
+#include <iostream>
+#include <vector>
+#include <string>
+#include <array>
+
 #include "ubx.h"
 
 #include <H5FDdsmTest.h>
@@ -59,7 +65,7 @@ char h5fsnd_meta[] =
  */
 ubx_config_t h5fsnd_config[] = {
         
-        {.name="port_ip_config", .type_name="struct H5FDdsmSender_config"},
+        {.name="config", .type_name="struct H5FDdsmSender_config"},
 
         {NULL},
 };
@@ -84,13 +90,18 @@ struct H5FDdsmSender_info {
 	MPI_Comm comm;
 	H5FDdsmManager* dsmManager;
 	
-	hid_t       file_id, group_id, dataset_id, dataspace_id, hdf5Handle, fapl, attribute_id;  /* identifiers */
-	hsize_t     dims[2];
-	herr_t      status;
-	//time_t      now;
-	//char*       time_string;
-        char*       ip;
-        int         port;
+	hid_t       				file_id, group_id, dataset_id, dataspace_id, hdf5Handle, fapl, attribute_id;  /* identifiers */
+	hsize_t     				dims[2];
+	herr_t      				status;
+	//time_t      				now;
+	//char*       				time_string;
+	char*	 				ip;
+        int         				port;
+	std::string 				file_name;
+	std::vector<std::string>		groups;
+	std::vector<std::array<std::string,2>> 	dataset_char;
+	std::vector<std::array<std::string,2>> 	dataset_double;
+	std::vector<std::array<std::string,2>> 	dataset_integer;
 };
 
 /* convenience functions to read/write from the ports */
@@ -105,17 +116,21 @@ void createGroup(struct H5FDdsmSender_info* sinfo, const char* name);
 
 void createGroups(struct H5FDdsmSender_info* sinfo) {
 	
-	createGroup(sinfo, "/State");
-	createGroup(sinfo, "/State/TimeStamp");
-	createGroup(sinfo, "State/Twist");
-	createGroup(sinfo, "State/Twist/RotationalVelocity");
-	createGroup(sinfo, "State/Twist/LinearVelocity");
-	createGroup(sinfo, "/State/BaseCartesianPosition");
-	createGroup(sinfo, "/State/BaseCartesianPosition/Vector");
-	createGroup(sinfo, "/State/BaseCartesianPosition/Rotation");
-	createGroup(sinfo, "/State/BaseMotorinfo");
-	createGroup(sinfo, "/State/ArmMotorinfo");
-	createGroup(sinfo, "/State/JointStates");
+	//createGroup(sinfo, "/State");
+	//createGroup(sinfo, "/State/TimeStamp");
+	//createGroup(sinfo, "State/Twist");
+	//createGroup(sinfo, "State/Twist/RotationalVelocity");
+	//createGroup(sinfo, "State/Twist/LinearVelocity");
+	//createGroup(sinfo, "/State/BaseCartesianPosition");
+	//createGroup(sinfo, "/State/BaseCartesianPosition/Vector");
+	//createGroup(sinfo, "/State/BaseCartesianPosition/Rotation");
+	//createGroup(sinfo, "/State/BaseMotorinfo");
+	//createGroup(sinfo, "/State/ArmMotorinfo");
+	//createGroup(sinfo, "/State/JointStates");
+	for (int i=0; i<sinfo->groups.size();i++) {
+		
+		createGroup(sinfo, sinfo->groups.at(i).c_str());
+	}
 }
 
 void createGroup(struct H5FDdsmSender_info* sinfo, const char* name) {
@@ -184,7 +199,7 @@ void createDatasetInteger(H5FDdsmSender_info* inf, const char* name, int* data) 
 static int h5fsnd_init(ubx_block_t *c) {
 	
 	int ret=0;
-        char *port_string;
+        std::string port_string;
         struct H5FDdsmSender_config* senderconf;
         unsigned int clen;
 
@@ -200,10 +215,16 @@ static int h5fsnd_init(ubx_block_t *c) {
 	inf=(struct H5FDdsmSender_info*) c->private_data;
 
         /* Get config and put inside inf */
-        senderconf = (struct H5FDdsmSender_config*) ubx_config_get_data_ptr(c, "port_ip_config", &clen);
+        senderconf = (struct H5FDdsmSender_config*) ubx_config_get_data_ptr(c, "config", &clen);
         inf->ip = senderconf->ip;
         port_string = senderconf->port;
-        sscanf(port_string, "%u", &inf->port);
+        sscanf(port_string.c_str(), "%u", &inf->port);
+
+	inf->file_name = senderconf->file_name;
+	inf->groups = senderconf->groups;
+	inf->dataset_char = senderconf->dataset_char;	
+	inf->dataset_double = senderconf->dataset_double;	
+	inf->dataset_integer = senderconf->dataset_integer;	
 
         inf->comm = MPI_COMM_WORLD;
         inf->dsmManager = new H5FDdsmManager();

@@ -17,6 +17,8 @@ environments)
 #Task List
 - resolve motorinfo ports issue
 - refine timestamp to microseconds range
+- is .cpp a "more proper" extension to .cxx 
+- should .h be .hpp
 - make configurable:
 	- put groups needed in config (char[][]?)
 	- seperate string_attribute, dataset_char, dataset_double, dataset_integer
