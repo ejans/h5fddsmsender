@@ -40,10 +40,10 @@
 #include "../youbot_driver/types/youbot_base_motorinfo.h"
 #include "../youbot_driver/types/youbot_control_modes.h"
 
-#include "types/H5FDdsmSender_config.h"
-#include "types/H5FDdsmSender_config.h.hexarr"
+#include "types/H5FDdsmSender_client_config.h"
+#include "types/H5FDdsmSender_client_config.h.hexarr"
 
-ubx_type_t H5FDdsmSender_config_type = def_struct_type(struct H5FDdsmSender_config, &H5FDdsmSender_config_h);
+ubx_type_t H5FDdsmSender_client_config_type = def_struct_type(struct H5FDdsmSender_client_config, &H5FDdsmSender_client_config_h);
 
 #define FILE "youbot.h5"
 
@@ -64,25 +64,13 @@ char h5fsnd_meta[] =
  * if an array is required, then .value = { .len=<LENGTH> } can be used.
  */
 ubx_config_t h5fsnd_config[] = {
-        
-        {.name="config", .type_name="struct H5FDdsmSender_config"},
 
-        {NULL},
-};
-
-
-/* we need twist and frame data from the robot */
-ubx_port_t h5fsnd_ports[] = {
-
-	{ .name="base_msr_twist", .attrs=PORT_DIR_IN, .in_type_name="struct kdl_twist" },
-	{ .name="base_msr_odom", .attrs=PORT_DIR_IN, .in_type_name="struct kdl_frame" },
-        { .name="base_motorinfo", .attrs=PORT_DIR_IN, .in_type_name="struct youbot_base_motorinfo" },
-        { .name="arm1_motorinfo",  .in_type_name="struct youbot_arm_motorinfo" },
-        { .name="arm1_state", .in_type_name="struct motionctrl_jnt_state" },
-        { .name="arm1_gripper", .out_type_name="int32_t" },
-
-        { NULL },
-        { NULL },
+        {.name="filename", .type_name="char"},
+	{.name="port_conf", .type_name="char"},
+	{.name="group_conf", .type_name="char"},
+	{.name="port_var_to_dataset_conf", .type_name="char"},
+	{.name="client_conf", .type_name="struct H5FDdsmSender_client_conf"},
+        {NULL}
 };
 
 struct H5FDdsmSender_info {
@@ -200,7 +188,7 @@ static int h5fsnd_init(ubx_block_t *c) {
 	
 	int ret=0;
         std::string port_string;
-        struct H5FDdsmSender_config* senderconf;
+        struct H5FDdsmSender_client_config* senderconf;
         unsigned int clen;
 
 	DBG(" ");
@@ -215,7 +203,7 @@ static int h5fsnd_init(ubx_block_t *c) {
 	inf=(struct H5FDdsmSender_info*) c->private_data;
 
         /* Get config and put inside inf */
-        senderconf = (struct H5FDdsmSender_config*) ubx_config_get_data_ptr(c, "config", &clen);
+        senderconf = (struct H5FDdsmSender_client_config*) ubx_config_get_data_ptr(c, "config", &clen);
         inf->ip = senderconf->ip;
         port_string = senderconf->port;
         sscanf(port_string.c_str(), "%u", &inf->port);
@@ -490,7 +478,7 @@ ubx_block_t h5fsnd_comp = {
 static int h5fsnd_mod_init(ubx_node_info_t* ni)
 {
         DBG(" ");
-        ubx_type_register(ni, &H5FDdsmSender_config_type);
+        ubx_type_register(ni, &H5FDdsmSender_client_config_type);
         return ubx_block_register(ni, &h5fsnd_comp);
 }
 
