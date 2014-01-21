@@ -16,8 +16,6 @@ function dosomething(x,y,z)
   print ("X is "..x.." and y is "..y.." and z is "..z)
 end
 
---local luaL_Buffer b
-
 print("creating array")
 local buf = ffi.new("double[3]",10.01, 11.11, 12.21)
 
@@ -26,26 +24,33 @@ local file = hdf5.create_file("Testfile1.h5")
 
 print("creating space")
 local space = hdf5.create_simple_space({1,3})
---local space = hdf5.create_simple_space({1,1})
 
 print("creating group")
 local group = file:create_group("Testgroup1")
+
+print("creating second group")
+group = group:create_group("Testgroup2")
+
+print("creating third group")
+group = group:create_group("Testgroup3")
+
+print("try to open group")
+--group = file:open_group("Testgroup1") --- works!
+group = file:open_group("Testgroup1/Testgroup2/Testgroup3") --- works!
 
 print("creating dataset")
 local dataset = group:create_dataset("TestDataset1", hdf5.double, space)
 
 print("write data from buffer to dataset")
---dataset:write(buf,'double')
---dataset:write(buf,hdf5.double)
---dataset:write("Test",hdf5.double) --- works!
 dataset:write(buf,hdf5.double)
 
 print("closing file")
 file:flush_file()
 
-io.read()
+--io.read()
 
 --- Original code of file logger --> already edited a bit
+
 --[[
 local ubx=require("ubx")
 local ubx_utils = require("ubx_utils")
@@ -55,6 +60,7 @@ local ffi = require("ffi")
 local time = require("time")
 local ts = tostring
 local strict = require"strict"
+local hdf5 = require"array"
 
 -- global state
 filename=nil
@@ -275,4 +281,4 @@ function cleanup(b)
    gconf=nil
    pvconf=nil
 end
---]]
+]]--
