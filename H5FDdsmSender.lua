@@ -16,6 +16,37 @@ function dosomething(x,y,z)
   print ("X is "..x.." and y is "..y.." and z is "..z)
 end
 
+function myfunction(f,g)
+   f:exists_object(g)
+end
+
+function checkforgroup(f,g)
+   if pcall(myfunction, f, g) then
+      return true
+   else
+      return false
+   end
+end
+
+function creategroups(f,gs)
+   local i,j=0
+   while j~=string.len(gs) do
+      if i==0 then
+         i=string.find(gs,"/")
+      else
+         i=j
+      end
+      j=string.find(gs,"/",i+1)
+      local sub=string.sub(gs,i+1,j-1)
+      print(sub)
+      if checkforgroup(f,sub) then
+      else
+         f=f:create_group(sub)
+      end
+   end
+   return f
+end
+
 print("creating array")
 local buf = ffi.new("double[3]",10.01, 11.11, 12.21)
 
@@ -25,6 +56,11 @@ local file = hdf5.create_file("Testfile1.h5")
 print("creating space")
 local space = hdf5.create_simple_space({1,3})
 
+print("create groups")
+group = creategroups(file,"/Testgroup1/Testgroup2/Testgroup3/")
+creategroups(file,"/Testgroup1/Testgroup4/Testgroup3/")
+
+--[[
 print("creating group")
 local group = file:create_group("Testgroup1")
 
@@ -33,16 +69,29 @@ group = group:create_group("Testgroup2")
 
 print("creating third group")
 group = group:create_group("Testgroup3")
+]]--
 
 print("try to open group")
 --group = file:open_group("Testgroup1") --- works!
-group = file:open_group("Testgroup1/Testgroup2/Testgroup3") --- works!
+--print(file:exists_object("Testgroup1/Testgroup2/Testgroup4"))
 
-print("creating dataset")
-local dataset = group:create_dataset("TestDataset1", hdf5.double, space)
+--print(checkfileforgroup(file,"Testgroup1/Testgroup2/Testgroup3"))
+if checkforgroup(file,"Testgroup1/Testgroup2/Testgroup3") then
+   print("The group exists")
+   group = file:open_group("Testgroup1/Testgroup2/Testgroup3") --- works!
+   --group = file:open_group("Testgroup1/Testgroup2/Testgroup4") --- works!
+   --if not group then error("Groups don't exist") end
+   --if pcall(foo(group,file))
 
-print("write data from buffer to dataset")
-dataset:write(buf,hdf5.double)
+   print("creating dataset")
+   local dataset = group:create_dataset("TestDataset1", hdf5.double, space)
+
+   print("write data from buffer to dataset")
+   dataset:write(buf,hdf5.double)
+else
+   print("The group does not exist")
+end
+
 
 print("closing file")
 file:flush_file()
