@@ -30,6 +30,7 @@ end
 
 function creategroups(f,gs)
    local i,j=0
+   local sub=nil
    while j~=string.len(gs) do
       if i==0 then
          i=string.find(gs,"/")
@@ -37,9 +38,10 @@ function creategroups(f,gs)
          i=j
       end
       j=string.find(gs,"/",i+1)
-      local sub=string.sub(gs,i+1,j-1)
+      sub=string.sub(gs,i+1,j-1)
       print(sub)
       if checkforgroup(f,sub) then
+         f=f:open_group(sub)
       else
          f=f:create_group(sub)
       end
@@ -57,8 +59,12 @@ print("creating space")
 local space = hdf5.create_simple_space({1,3})
 
 print("create groups")
+print(file)
 group = creategroups(file,"/Testgroup1/Testgroup2/Testgroup3/")
+print(file)
 creategroups(file,"/Testgroup1/Testgroup4/Testgroup3/")
+print(file)
+creategroups(file,"/Testgroup1/Testgroup2/Testgroup5/")
 
 --[[
 print("creating group")
